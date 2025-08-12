@@ -1,5 +1,5 @@
 {
-  "name": "leetcode-helper-extension",
+  "name": "leetcode-company-lists-exporter",
   "version": "1.0.0",
   "description": "Export LeetCode company questions to CSV",
   "scripts": {

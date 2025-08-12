@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "LeetCode Helper",
+  "name": "LeetCode Company Lists Exporter",
   "version": "1.0",
   "description": "Export LeetCode company questions to CSV",
   "permissions": [
@@ -13,6 +13,6 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "LeetCode Helper"
+    "default_title": "LeetCode Company Lists Exporter"
   }
 }
