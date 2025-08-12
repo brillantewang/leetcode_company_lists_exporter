@@ -1,3 +1,4 @@
+"use strict";
 // Company and duration mappings based on LeetCode favorite slugs
 const FAVORITE_SLUGS = {
     'meta': {
@@ -11,7 +12,6 @@ const FAVORITE_SLUGS = {
         'six-months': 'uber-six-months'
     }
 };
-
 // GraphQL query - same as in the Python script
 const GRAPHQL_QUERY = `
 query favoriteQuestionList(
@@ -32,7 +32,6 @@ query favoriteQuestionList(
     }
 }
 `;
-
 // Get LEETCODE_SESSION cookie from the browser
 async function getLeetCodeSession() {
     return new Promise((resolve, reject) => {
@@ -42,13 +41,13 @@ async function getLeetCodeSession() {
         }, (cookie) => {
             if (cookie && cookie.value) {
                 resolve(cookie.value);
-            } else {
+            }
+            else {
                 reject(new Error('LEETCODE_SESSION cookie not found. Please make sure you are logged into LeetCode in any tab.'));
             }
         });
     });
 }
-
 // Make GraphQL request to LeetCode API
 async function fetchQuestions(favoriteSlug, leetcodeSession) {
     const variables = {
@@ -58,7 +57,6 @@ async function fetchQuestions(favoriteSlug, leetcodeSession) {
             sortOrder: "ASCENDING"
         }
     };
-
     const response = await fetch('https://leetcode.com/graphql', {
         method: 'POST',
         headers: {
@@ -70,72 +68,65 @@ async function fetchQuestions(favoriteSlug, leetcodeSession) {
             variables: variables
         })
     });
-
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
-
     const data = await response.json();
-
     if (data.errors) {
         throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);
     }
-
     if (!data.data || !data.data.favoriteQuestionList) {
         throw new Error('Unable to access company questions. Make sure you have LeetCode Premium and access to this list.');
     }
-
     return data.data.favoriteQuestionList.questions;
 }
-
 // Parse CSV content and return array of objects
 function parseCsv(csvContent) {
     const lines = csvContent.split('\n').filter(line => line.trim());
-    if (lines.length < 2) return { data: [], headers: [] };
-
+    if (lines.length < 2)
+        return { data: [], headers: [] };
     const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
     const data = [];
-
     for (let i = 1; i < lines.length; i++) {
         const values = [];
         let current = '';
         let inQuotes = false;
-
         for (let j = 0; j < lines[i].length; j++) {
             const char = lines[i][j];
-            if (char === '"' && (j === 0 || lines[i][j-1] === ',')) {
+            if (char === '"' && (j === 0 || lines[i][j - 1] === ',')) {
                 inQuotes = true;
-            } else if (char === '"' && inQuotes && (j === lines[i].length - 1 || lines[i][j+1] === ',')) {
+            }
+            else if (char === '"' && inQuotes && (j === lines[i].length - 1 || lines[i][j + 1] === ',')) {
                 inQuotes = false;
-            } else if (char === ',' && !inQuotes) {
+            }
+            else if (char === ',' && !inQuotes) {
                 values.push(current.trim());
                 current = '';
-            } else if (char !== '"' || inQuotes) {
+            }
+            else if (char !== '"' || inQuotes) {
                 current += char;
             }
         }
         values.push(current.trim());
-
         const row = {};
         headers.forEach((header, index) => {
             row[header] = values[index] || '';
         });
         data.push(row);
     }
-
     return { data, headers };
 }
-
 // Read and parse uploaded CSV file
 async function readUploadedCsv(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const csvContent = e.target.result;
+                const csvContent = e.target?.result;
                 const parsed = parseCsv(csvContent);
                 resolve(parsed);
-            } catch (error) {
+            }
+            catch (error) {
                 reject(error);
             }
         };
@@ -143,22 +134,18 @@ async function readUploadedCsv(file) {
         reader.readAsText(file);
     });
 }
-
 // Merge new questions with existing CSV data
 function mergeQuestionsWithCsv(newQuestions, existingData, existingHeaders) {
     // Create base fieldnames with required fields first
     const baseFields = ['title_slug', 'url', 'is_outdated'];
     const allHeaders = [...baseFields];
-
     // Add any additional fields from existing CSV that aren't already included
     existingHeaders.forEach(header => {
         if (!allHeaders.includes(header)) {
             allHeaders.push(header);
         }
     });
-
     const mergedRows = [];
-
     // Create lookup map for existing questions
     const existingLookup = {};
     existingData.forEach(row => {
@@ -166,20 +153,17 @@ function mergeQuestionsWithCsv(newQuestions, existingData, existingHeaders) {
             existingLookup[row.title_slug] = row;
         }
     });
-
     // Process current questions (new + existing that are still current)
     const currentSlugs = new Set();
     newQuestions.forEach(question => {
         const titleSlug = question.titleSlug;
         currentSlugs.add(titleSlug);
-
         const url = `https://leetcode.com/problems/${titleSlug}`;
         const row = {
             title_slug: titleSlug,
             url: url,
             is_outdated: ''
         };
-
         // If this question existed in previous CSV, preserve its custom fields
         if (existingLookup[titleSlug]) {
             const existingRow = existingLookup[titleSlug];
@@ -189,10 +173,8 @@ function mergeQuestionsWithCsv(newQuestions, existingData, existingHeaders) {
                 }
             });
         }
-
         mergedRows.push(row);
     });
-
     console.log(currentSlugs, 'current slugs');
     // Add outdated questions from existing CSV
     existingData.forEach(existingRow => {
@@ -203,23 +185,22 @@ function mergeQuestionsWithCsv(newQuestions, existingData, existingHeaders) {
             mergedRows.push(row);
         }
     });
-
     return { rows: mergedRows, headers: allHeaders };
 }
-
-// Convert questions to Csv format (with merge support)
+// Convert questions to CSV format (with merge support)
 function convertToCsv(questions, favoriteSlug, existingCsv = null) {
-    let headers, rows;
-
+    let headers;
+    let rows;
     if (existingCsv && existingCsv.data.length > 0) {
-        // Merge with existing Csv
+        // Merge with existing CSV
         console.log('yes existing csv');
         const merged = mergeQuestionsWithCsv(questions, existingCsv.data, existingCsv.headers);
         headers = merged.headers;
         rows = merged.rows;
-    } else {
+    }
+    else {
         console.log('no existing csv');
-        // No existing Csv, create new one
+        // No existing CSV, create new one
         headers = ['title_slug', 'url', 'is_outdated'];
         rows = questions.map(question => ({
             title_slug: question.titleSlug,
@@ -227,10 +208,8 @@ function convertToCsv(questions, favoriteSlug, existingCsv = null) {
             is_outdated: ''
         }));
     }
-
-    // Convert to Csv string
+    // Convert to CSV string
     const csvRows = [headers.join(',')];
-
     rows.forEach(row => {
         const csvRow = headers.map(header => {
             const value = row[header] || '';
@@ -240,15 +219,12 @@ function convertToCsv(questions, favoriteSlug, existingCsv = null) {
         });
         csvRows.push(csvRow.join(','));
     });
-
     return csvRows.join('\n');
 }
-
-// Download Csv file
+// Download CSV file
 function downloadCsv(csvContent, filename) {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-
     chrome.downloads.download({
         url: url,
         filename: filename,
@@ -256,114 +232,101 @@ function downloadCsv(csvContent, filename) {
     }, (downloadId) => {
         if (chrome.runtime.lastError) {
             console.error('Download failed:', chrome.runtime.lastError);
-        } else {
+        }
+        else {
             console.log('Download started with ID:', downloadId);
         }
         // Clean up the object URL
         URL.revokeObjectURL(url);
     });
 }
-
 // Update status message
 function updateStatus(message, type = 'info') {
     const statusDiv = document.getElementById('status');
     statusDiv.textContent = message;
     statusDiv.className = `status ${type}`;
 }
-
 // Show/hide progress indicator
 function showProgress(show = true) {
     const progressDiv = document.getElementById('progress');
     progressDiv.style.display = show ? 'block' : 'none';
 }
-
 // Main function to get questions
 async function getQuestions() {
     const getQuestionsBtn = document.getElementById('getQuestions');
     const companySelect = document.getElementById('company');
     const durationSelect = document.getElementById('duration');
     const csvFileInput = document.getElementById('csvFile');
-
     try {
         // Disable button and show progress
         getQuestionsBtn.disabled = true;
         showProgress(true);
         updateStatus('Getting LEETCODE_SESSION cookie...', 'info');
-
         // Get selected values
         const company = companySelect.value;
         const duration = durationSelect.value;
         const favoriteSlug = FAVORITE_SLUGS[company][duration];
-
         // Check if CSV file was uploaded
-        let existingCSV = null;
+        let existingCsv = null;
         console.log('Checking for uploaded CSV file...');
-        console.log('csvFileInput.files.length:', csvFileInput.files.length);
-
-        if (csvFileInput.files.length > 0) {
+        console.log('csvFileInput.files.length:', csvFileInput.files?.length ?? 0);
+        if (csvFileInput.files && csvFileInput.files.length > 0) {
             console.log('CSV file found:', csvFileInput.files[0].name);
             updateStatus('Reading uploaded CSV file...', 'info');
             try {
                 existingCsv = await readUploadedCsv(csvFileInput.files[0]);
-                console.log('Parsed CSV data:', existingCSV);
-                updateStatus(`Found existing CSV with ${existingCSV.data.length} questions. Preparing to merge...`, 'info');
-            } catch (csvError) {
+                console.log('Parsed CSV data:', existingCsv);
+                updateStatus(`Found existing CSV with ${existingCsv.data.length} questions. Preparing to merge...`, 'info');
+            }
+            catch (csvError) {
                 console.error('Failed to read CSV file:', csvError);
                 updateStatus('Warning: Could not read CSV file. Proceeding without merge.', 'info');
             }
-        } else {
+        }
+        else {
             console.log('No CSV file uploaded');
         }
-
         // Get LeetCode session cookie
         const leetcodeSession = await getLeetCodeSession();
-
         updateStatus('Fetching questions from LeetCode...', 'info');
-
         // Fetch questions
         const questions = await fetchQuestions(favoriteSlug, leetcodeSession);
-
         if (!questions || questions.length === 0) {
             throw new Error('No questions found. Make sure you have LeetCode Premium and access to this company list.');
         }
-
         const statusMessage = existingCsv ?
             `Found ${questions.length} current questions. Merging with existing CSV...` :
             `Found ${questions.length} questions. Generating CSV...`;
         updateStatus(statusMessage, 'info');
-
-        // Convert to Csv (with merge if applicable) and download
+        // Convert to CSV (with merge if applicable) and download
         const csvContent = convertToCsv(questions, favoriteSlug, existingCsv);
         const timestamp = new Date().toLocaleDateString('en-US', {
             month: '2-digit',
             day: '2-digit',
             year: 'numeric'
         }).replace(/\//g, '');
-
         const filename = `leetcode_${favoriteSlug}_${timestamp}.csv`;
-
         downloadCsv(csvContent, filename);
-
         const successMessage = existingCsv ?
             `Successfully merged and downloaded ${questions.length} current questions with your existing data!` :
             `Successfully downloaded ${questions.length} questions!`;
         updateStatus(successMessage, 'success');
-
-    } catch (error) {
+    }
+    catch (error) {
         console.error('Error:', error);
-        updateStatus(`Error: ${error.message}`, 'error');
-    } finally {
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+        updateStatus(`Error: ${errorMessage}`, 'error');
+    }
+    finally {
         // Re-enable button and hide progress
         getQuestionsBtn.disabled = false;
         showProgress(false);
     }
 }
-
 // Initialize popup when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const getQuestionsBtn = document.getElementById('getQuestions');
     getQuestionsBtn.addEventListener('click', getQuestions);
-
     // Display initial message
     updateStatus('Ready to fetch LeetCode questions. Make sure you\'re logged into LeetCode with Premium.', 'info');
 });

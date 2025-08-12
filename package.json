@@ -1,0 +1,14 @@
+{
+  "name": "leetcode-helper-extension",
+  "version": "1.0.0",
+  "description": "Export LeetCode company questions to CSV",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.3.0"
+  }
+}
