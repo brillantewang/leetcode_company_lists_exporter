@@ -10,7 +10,72 @@ const FAVORITE_SLUGS = {
         'thirty-days': 'uber-thirty-days',
         'three-months': 'uber-three-months',
         'six-months': 'uber-six-months'
-    }
+    },
+    'amazon': {
+        'thirty-days': 'amazon-thirty-days',
+        'three-months': 'amazon-three-months',
+        'six-months': 'amazon-six-months'
+    },
+    'google': {
+        'thirty-days': 'google-thirty-days',
+        'three-months': 'google-three-months',
+        'six-months': 'google-six-months'
+    },
+    'tiktok': {
+        'thirty-days': 'tiktok-thirty-days',
+        'three-months': 'tiktok-three-months',
+        'six-months': 'tiktok-six-months'
+    },
+    'linkedin': {
+        'thirty-days': 'linkedin-thirty-days',
+        'three-months': 'linkedin-three-months',
+        'six-months': 'linkedin-six-months'
+    },
+    'microsoft': {
+        'thirty-days': 'microsoft-thirty-days',
+        'three-months': 'microsoft-three-months',
+        'six-months': 'microsoft-six-months'
+    },
+    'bloomberg': {
+        'thirty-days': 'bloomberg-thirty-days',
+        'three-months': 'bloomberg-three-months',
+        'six-months': 'bloomberg-six-months'
+    },
+    'airbnb': {
+        'thirty-days': 'airbnb-thirty-days',
+        'three-months': 'airbnb-three-months',
+        'six-months': 'airbnb-six-months'
+    },
+    'apple': {
+        'thirty-days': 'apple-thirty-days',
+        'three-months': 'apple-three-months',
+        'six-months': 'apple-six-months'
+    },
+    'doordash': {
+        'thirty-days': 'doordash-thirty-days',
+        'three-months': 'doordash-three-months',
+        'six-months': 'doordash-six-months'
+    },
+    'oracle': {
+        'thirty-days': 'oracle-thirty-days',
+        'three-months': 'oracle-three-months',
+        'six-months': 'oracle-six-months'
+    },
+    'adobe': {
+        'thirty-days': 'adobe-thirty-days',
+        'three-months': 'adobe-three-months',
+        'six-months': 'adobe-six-months'
+    },
+    'salesforce': {
+        'thirty-days': 'salesforce-thirty-days',
+        'three-months': 'salesforce-three-months',
+        'six-months': 'salesforce-six-months'
+    },
+    'roblox': {
+        'thirty-days': 'roblox-thirty-days',
+        'three-months': 'roblox-three-months',
+        'six-months': 'roblox-six-months'
+    },
 };
 // GraphQL query - same as in the Python script
 const GRAPHQL_QUERY = `
