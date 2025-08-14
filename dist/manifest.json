@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LeetCode Company Lists Exporter",
   "version": "1.0",
-  "description": "Export LeetCode company questions to CSV",
+  "description": "Export LeetCode company question URLs to CSV, letting you track and review problems via your own custom spreadsheet",
   "permissions": [
     "cookies",
     "downloads"
