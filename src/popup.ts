@@ -296,11 +296,9 @@ function mergeQuestionsWithCsv(newQuestions: Question[], existingData: CsvRow[],
     mergedRows.push(row);
   });
 
-  console.log(currentSlugs, 'current slugs');
   // Add outdated questions from existing CSV
   existingData.forEach(existingRow => {
     if (existingRow.title_slug && !currentSlugs.has(existingRow.title_slug)) {
-      console.log(existingRow, 'existing row');
       const row = { ...existingRow };
       row.is_outdated = 'T';
       mergedRows.push(row);
@@ -317,12 +315,10 @@ function convertToCsv(questions: Question[], favoriteSlug: string, existingCsv: 
 
   if (existingCsv && existingCsv.data.length > 0) {
     // Merge with existing CSV
-    console.log('yes existing csv');
     const merged = mergeQuestionsWithCsv(questions, existingCsv.data, existingCsv.headers);
     headers = merged.headers;
     rows = merged.rows;
   } else {
-    console.log('no existing csv');
     // No existing CSV, create new one
     headers = ['title_slug', 'url', 'is_outdated'];
     rows = questions.map(question => ({
@@ -401,15 +397,11 @@ async function getQuestions(): Promise<void> {
 
     // Check if CSV file was uploaded
     let existingCsv: ParsedCsv | null = null;
-    console.log('Checking for uploaded CSV file...');
-    console.log('csvFileInput.files.length:', csvFileInput.files?.length ?? 0);
 
     if (csvFileInput.files && csvFileInput.files.length > 0) {
-      console.log('CSV file found:', csvFileInput.files[0].name);
       updateStatus('Reading uploaded CSV file...', 'info');
       try {
         existingCsv = await readUploadedCsv(csvFileInput.files[0]);
-        console.log('Parsed CSV data:', existingCsv);
         updateStatus(`Found existing CSV with ${existingCsv.data.length} questions. Preparing to merge...`, 'info');
       } catch (csvError) {
         console.error('Failed to read CSV file:', csvError);
