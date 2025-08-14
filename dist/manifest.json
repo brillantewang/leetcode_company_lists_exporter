@@ -5,7 +5,6 @@
   "description": "Export LeetCode company questions to CSV",
   "permissions": [
     "cookies",
-    "activeTab",
     "downloads"
   ],
   "host_permissions": [
