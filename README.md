@@ -1,6 +1,6 @@
 # Leetcode Company Lists Exporter
 
-Tracking the Meta Leetcode questions in my own spreadsheet and systematically reviewing and refreshing them (with the latest questions) was key to my success in receiving an offer.
+[youtube](https://youtu.be/aQBkWeFEBeo?si=rPRQBMhOWWzOd6vf)
 
 Use this extension to export the question URLs for a company + duration (ie Meta, 30 days) to a CSV, ordered in the same way as on Leetcode (basically by Frequency). You can then add your own custom fields like `Last Attempted Date`, `Confidence Level (1 - 5)`, etc, whatever helps you track progress.
 
