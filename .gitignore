@@ -22,3 +22,7 @@ Thumbs.db
 # Node modules (if we add build tools later)
 node_modules/
 npm-debug.log*
+
+# Python
+scripts/.venv
+scripts/.env
