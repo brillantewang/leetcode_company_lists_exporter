@@ -1,0 +1,86 @@
+# LeetCode Test Script Management
+
+# Load .env file
+set dotenv-load
+
+# Set up the script environment
+setup:
+    python3 -m venv .venv
+    .venv/bin/pip install -r ./requirements.txt
+    @echo "✅ Setup complete! Run 'just status' to check configuration"
+
+# Check script status and configuration
+status:
+    #!/usr/bin/env bash
+    echo "📊 LeetCode Script Status Check"
+    echo "==============================="
+    echo ""
+
+    # Check virtual environment
+    if [ -d ".venv" ]; then
+        echo "✅ Virtual environment: Ready"
+    else
+        echo "❌ Virtual environment: Missing (run 'just setup')"
+    fi
+    echo ""
+
+    # Check Arc cookies
+    echo "🍪 Arc Browser Cookies:"
+    arc_default="$HOME/Library/Application Support/Arc/User Data/Default/Cookies"
+    arc_profile1="$HOME/Library/Application Support/Arc/User Data/Profile 1/Cookies"
+
+    if [ -f "$arc_default" ]; then
+        echo "✅ Default profile cookies found"
+        echo "   Last modified: $(stat -f "%Sm" "$arc_default")"
+    elif [ -f "$arc_profile1" ]; then
+        echo "✅ Profile 1 cookies found"
+        echo "   Last modified: $(stat -f "%Sm" "$arc_profile1")"
+    else
+        echo "❌ Arc cookies not found"
+        echo "   Make sure Arc is installed and you've browsed some websites"
+        echo "   Expected: $arc_default"
+    fi
+    echo ""
+
+    # Check environment variables
+    echo "🔑 Environment Variables:"
+
+    if [ -n "${TO_EMAIL:-}" ]; then
+        echo "✅ TO_EMAIL: $TO_EMAIL"
+    else
+        echo "❌ TO_EMAIL: Not set"
+        echo "   This is your personal email where notifications are sent"
+        echo "   Example: TO_EMAIL=your.email@gmail.com"
+    fi
+
+    if [ -n "${GMAIL_BOT_EMAIL_ADDRESS:-}" ]; then
+        echo "✅ GMAIL_BOT_EMAIL_ADDRESS: $GMAIL_BOT_EMAIL_ADDRESS"
+    else
+        echo "❌ GMAIL_BOT_EMAIL_ADDRESS: Not set"
+        echo "   This is the Gmail account you choose to send the notifications"
+        echo "   Example: GMAIL_BOT_EMAIL_ADDRESS=bot@gmail.com"
+    fi
+
+    if [ -n "${GMAIL_BOT_APP_PASSWORD:-}" ]; then
+        echo "✅ GMAIL_BOT_APP_PASSWORD: Configured (hidden)"
+    else
+        echo "❌ GMAIL_BOT_APP_PASSWORD: Not set"
+        echo "   This is the Gmail App Password (not a regular password)"
+        echo "   Example: GMAIL_BOT_APP_PASSWORD=foo"
+    fi
+    echo ""
+
+    # Overall status
+    if [ -d ".venv" ] && \
+       ([ -f "$arc_default" ] || [ -f "$arc_profile1" ]) && \
+       [ -n "${TO_EMAIL:-}" ] && \
+       [ -n "${GMAIL_BOT_EMAIL_ADDRESS:-}" ] && \
+       [ -n "${GMAIL_BOT_APP_PASSWORD:-}" ]; then
+        echo "🎉 All systems ready! Run 'just run' to run the LeetCode GraphQL test"
+    else
+        echo "⚠️  Some configuration missing. Fix the ❌ items above"
+    fi
+
+# Run the LeetCode test
+run:
+    .venv/bin/python test_graphql_query.py
