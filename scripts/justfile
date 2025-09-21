@@ -81,6 +81,51 @@ status:
         echo "⚠️  Some configuration missing. Fix the ❌ items above"
     fi
 
-# Run the LeetCode test
+# Manually run the LeetCode GraphQL test
 run:
-    .venv/bin/python test_graphql_query.py
+    .venv/bin/python leetcode_graphql_test.py
+
+
+CURRENT_DIR := justfile_directory()
+
+PLIST_CONTENT := '''
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>leetcode-graphql-test</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>%s/run.sh</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>10</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+</dict>
+</plist>
+'''
+
+# Install LaunchAgent for scheduled execution
+schedule:
+    #!/usr/bin/env bash
+    chmod +x run.sh
+    echo "📅 Scheduling LeetCode GraphQL test at 10:30 AM..."
+    printf '{{PLIST_CONTENT}}' '{{CURRENT_DIR}}' > ~/Library/LaunchAgents/schedule_leetcode_graphql_test.plist
+    launchctl load ~/Library/LaunchAgents/schedule_leetcode_graphql_test.plist
+    echo "✅ Installed! Runs on a schedule now. Check logs: ~/Library/Logs/leetcode_graphql_test.log. Run 'just test-scheduler' to test the scheduler."
+
+test-scheduler:
+    launchctl start leetcode-graphql-test
+    echo "✅ Tested scheduler. Check logs: ~/Library/Logs/leetcode_graphql_test.log."
+
+# Remove scheduler
+unschedule:
+    launchctl unload ~/Library/LaunchAgents/schedule_leetcode_graphql_test.plist 2>/dev/null || true
+    rm ~/Library/LaunchAgents/schedule_leetcode_graphql_test.plist 2>/dev/null || true
+    @echo "✅ Removed scheduler"

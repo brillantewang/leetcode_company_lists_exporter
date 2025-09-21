@@ -13,6 +13,7 @@ import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
 import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -120,7 +121,10 @@ def test_leetcode_api(token, favorite_slug="facebook-thirty-days"):
         return False, f"Request failed: {e}"
 
 def main():
-    print("🚀 LeetCode GraphQL Test")
+    now = datetime.now()
+    timezone_offset = time.strftime("%z")
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S") + f" {timezone_offset}"
+    print(f"{timestamp} 🚀 LeetCode GraphQL Test")
 
     # Get session token
     token = get_leetcode_session_token()
